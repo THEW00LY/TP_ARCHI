@@ -29,47 +29,51 @@ db_init:
 	.cfi_offset 3, -40
 	sub	rsp, 8
 	.cfi_def_cfa_offset 48
-	mov	rbp, rdi
-	mov	r12d, esi
+	mov	rbx, rdi
+	mov	r13d, esi
 	mov	edi, 16
 	call	malloc@PLT
-	mov	r13, rax
-	mov	DWORD PTR 8[rax], r12d
-	movsx	rdi, r12d
+	mov	r12, rax
+	mov	DWORD PTR 8[rax], r13d
+	movsx	rdi, r13d
 	add	rdi, 1
 	sal	rdi, 5
 	call	malloc@PLT
-	mov	rbx, rax
-	mov	QWORD PTR 0[r13], rax
-	test	r12d, r12d
+	and	rax, -32
+	lea	rbp, 32[rax]
+	mov	QWORD PTR [r12], rbp
+	test	r13d, r13d
 	jle	.L2
-	mov	edx, r12d
+	lea	edx, -1[r13]
 	sal	rdx, 5
-	mov	eax, 0
+	lea	rsi, 64[rax+rdx]
+	mov	rdx, rbp
+	sub	rbx, rax
+	mov	rcx, rbx
 .L3:
-	movdqu	xmm0, XMMWORD PTR 0[rbp+rax]
-	movups	XMMWORD PTR [rbx+rax], xmm0
-	movdqu	xmm1, XMMWORD PTR 16[rbp+rax]
-	movups	XMMWORD PTR 16[rbx+rax], xmm1
-	add	rax, 32
-	cmp	rax, rdx
+	movdqu	xmm0, XMMWORD PTR -32[rcx+rdx]
+	movaps	XMMWORD PTR [rdx], xmm0
+	movdqu	xmm1, XMMWORD PTR -16[rcx+rdx]
+	movaps	XMMWORD PTR 16[rdx], xmm1
+	add	rdx, 32
+	cmp	rdx, rsi
 	jne	.L3
 .L2:
-	mov	ecx, ebx
+	mov	ecx, ebp
 	and	ecx, 63
-	mov	rdx, rbx
+	mov	rdx, rbp
 	lea	rsi, .LC0[rip]
 	mov	edi, 1
 	mov	eax, 0
 	call	__printf_chk@PLT
-	lea	rcx, 32[rbx]
+	lea	rcx, 32[rbp]
 	and	ecx, 63
-	mov	rdx, rbx
+	mov	rdx, rbp
 	lea	rsi, .LC1[rip]
 	mov	edi, 1
 	mov	eax, 0
 	call	__printf_chk@PLT
-	mov	rax, r13
+	mov	rax, r12
 	add	rsp, 8
 	.cfi_def_cfa_offset 40
 	pop	rbx
@@ -226,82 +230,36 @@ db_closest:
 .LFB57:
 	.cfi_startproc
 	endbr64
-	push	r14
-	.cfi_def_cfa_offset 16
-	.cfi_offset 14, -16
-	push	r13
-	.cfi_def_cfa_offset 24
-	.cfi_offset 13, -24
-	push	r12
-	.cfi_def_cfa_offset 32
-	.cfi_offset 12, -32
-	push	rbp
-	.cfi_def_cfa_offset 40
-	.cfi_offset 6, -40
-	push	rbx
-	.cfi_def_cfa_offset 48
-	.cfi_offset 3, -48
-	sub	rsp, 16
-	.cfi_def_cfa_offset 64
-	movss	DWORD PTR 8[rsp], xmm0
-	movss	DWORD PTR 12[rsp], xmm1
-	movss	xmm0, DWORD PTR .LC2[rip]
-	divss	xmm0, DWORD PTR .LC3[rip]
-	movss	DWORD PTR 4[rsp], xmm0
-	mov	r14d, DWORD PTR 8[rdi]
-	test	r14d, r14d
-	jle	.L34
-	mov	r13, rdi
-	mov	r14d, r14d
-	mov	ebx, 0
-	mov	ebp, -1
-.L33:
-	mov	r12d, ebx
-	mov	rax, rbx
-	sal	rax, 5
-	add	rax, QWORD PTR 0[r13]
-	movss	xmm0, DWORD PTR 8[rsp]
-	subss	xmm0, DWORD PTR 24[rax]
-	movss	xmm1, DWORD PTR 12[rsp]
-	subss	xmm1, DWORD PTR 28[rax]
-	mulss	xmm0, xmm0
-	mulss	xmm1, xmm1
-	addss	xmm0, xmm1
-	pxor	xmm3, xmm3
-	ucomiss	xmm3, xmm0
-	ja	.L38
-	sqrtss	xmm0, xmm0
+	movss	xmm4, DWORD PTR .LC2[rip]
+	divss	xmm4, DWORD PTR .LC3[rip]
+	mov	esi, DWORD PTR 8[rdi]
+	test	esi, esi
+	jle	.L31
+	mov	rdx, QWORD PTR [rdi]
+	add	rdx, 24
+	mov	ecx, 0
+	mov	eax, -1
 .L30:
-	movss	xmm2, DWORD PTR 4[rsp]
-	comiss	xmm2, xmm0
-	cmova	ebp, r12d
-	minss	xmm0, xmm2
-	movss	DWORD PTR 4[rsp], xmm0
-	add	rbx, 1
-	cmp	rbx, r14
-	jne	.L33
+	movaps	xmm2, xmm0
+	subss	xmm2, DWORD PTR [rdx]
+	movaps	xmm3, xmm1
+	subss	xmm3, DWORD PTR 4[rdx]
+	mulss	xmm2, xmm2
+	mulss	xmm3, xmm3
+	addss	xmm2, xmm3
+	comiss	xmm4, xmm2
+	cmova	eax, ecx
+	minss	xmm2, xmm4
+	movaps	xmm4, xmm2
+	add	ecx, 1
+	add	rdx, 32
+	cmp	esi, ecx
+	jne	.L30
 .L27:
-	movsx	rax, ebp
-	add	rsp, 16
-	.cfi_remember_state
-	.cfi_def_cfa_offset 48
-	pop	rbx
-	.cfi_def_cfa_offset 40
-	pop	rbp
-	.cfi_def_cfa_offset 32
-	pop	r12
-	.cfi_def_cfa_offset 24
-	pop	r13
-	.cfi_def_cfa_offset 16
-	pop	r14
-	.cfi_def_cfa_offset 8
+	cdqe
 	ret
-.L38:
-	.cfi_restore_state
-	call	sqrtf@PLT
-	jmp	.L30
-.L34:
-	mov	ebp, -1
+.L31:
+	mov	eax, -1
 	jmp	.L27
 	.cfi_endproc
 .LFE57:
@@ -315,26 +273,26 @@ db_count_female_muggles:
 	mov	edx, DWORD PTR 8[rdi]
 	mov	rcx, QWORD PTR [rdi]
 	test	edx, edx
-	jle	.L44
+	jle	.L38
 	lea	rax, 16[rcx]
 	lea	edx, -1[rdx]
 	sal	rdx, 5
 	lea	rcx, 48[rcx+rdx]
 	mov	edx, 0
-	jmp	.L43
-.L42:
+	jmp	.L37
+.L36:
 	add	rax, 32
 	cmp	rax, rcx
-	je	.L40
-.L43:
-	cmp	BYTE PTR [rax], 1
-	je	.L42
+	je	.L34
+.L37:
 	cmp	BYTE PTR 1[rax], 1
+	je	.L36
+	cmp	BYTE PTR [rax], 1
 	adc	edx, 0
-	jmp	.L42
-.L44:
+	jmp	.L36
+.L38:
 	mov	edx, 0
-.L40:
+.L34:
 	mov	eax, edx
 	ret
 	.cfi_endproc

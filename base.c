@@ -115,7 +115,7 @@ pid db_closest(DB *db, float lat, float lon) {
     for(int i = 0 ; i<size ; i++) {
         float dx = lat - db->persons[i].latitude;
         float dy = lon - db->persons[i].longitude;
-        float dist = sqrtf(dx * dx + dy * dy);
+        float dist = dx * dx + dy * dy;
         if(dist < min_dist) {
             min_dist = dist;
             closest = i;
@@ -142,8 +142,11 @@ uint32_t db_count_female_muggles(DB *db) {
         char male = ps[i].male;
 
         // if the person is male, skip the rest of the loop
-        if(male == 1)
+        if(wizard == 1)
             continue;
+        
+        count+=(male == 0);  
+
         
         // This was previously:
         //     if (wizard == 0) {
@@ -159,7 +162,6 @@ uint32_t db_count_female_muggles(DB *db) {
         // to the counter is equivalent to the previous
         // conditional increment
 
-        count += (wizard == 0);  
         
     }
     return count;
